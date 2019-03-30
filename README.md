@@ -8,7 +8,7 @@ It reports
 * list of false positives and false negatives
 
 ## Author
-Jin-Dong Kim (jdkim@dbcls.rois.ac.jp)
+Jin-Dong Kim (jindong.kim@gmail.com)
 
 ## License
 Released under the [MIT license](http://opensource.org/licenses/MIT).
