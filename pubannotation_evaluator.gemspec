@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Jin-Dong Kim"]
   s.email       = 'jdkim@dbcls.rois.ac.jp'
   s.files       = ["lib/pubannotation_evaluator.rb", "lib/pubannotation_evaluator/pubannotation_evaluator.rb"]
-  s.executables = ["pubannotation-eval"]
+  s.executables = ["pubannotation-eval.rb"]
   s.homepage    = 'https://github.com/pubannotation/pubannotation_evaluator'
   s.license     = 'MIT'
 end
