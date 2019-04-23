@@ -1,10 +1,21 @@
 class PubannotationEvaluator
-	BOUNDARY_SOFTNESS_CHARACTER = 20
-	BOUNDARY_SOFTNESS_WORD = 2
+	SOFT_MATCH_CHARACTERS = 20
+	SOFT_MATCH_WORDS = 2
+	EXACT_TYPE_MATCH = 'study_type == reference_type ? 1 : 0'
 
-	def initialize(boundary_softness_character = BOUNDARY_SOFTNESS_CHARACTER, boundary_softness_word = BOUNDARY_SOFTNESS_WORD)
-		@boundary_softness_character = boundary_softness_character
-		@boundary_softness_word = boundary_softness_word
+	def initialize(soft_match_chatacters = SOFT_MATCH_CHARACTERS, soft_match_words = SOFT_MATCH_WORDS, denotation_type_match = EXACT_TYPE_MATCH, relation_type_match = EXACT_TYPE_MATCH)
+		@soft_match_chatacters = soft_match_chatacters
+		@soft_match_words = soft_match_words
+		@denotation_type_match = eval <<-HEREDOC
+			Proc.new do |study_type, reference_type|
+				#{denotation_type_match}
+			end
+		HEREDOC
+		@relation_type_match = eval <<-HEREDOC
+			Proc.new do |study_type, reference_type|
+				#{relation_type_match}
+			end
+		HEREDOC
 	end
 
 	# To compare two sets of annotations
@@ -45,6 +56,14 @@ class PubannotationEvaluator
 		{counts:counts, measures:measures}
 	end
 
+	def get_false_positives(comparison, project_name)
+		comparison.select{|m| m[:study] && m[:reference].nil?}
+	end
+
+	def get_false_negatives(comparison, project_name)
+		comparison.select{|m| m[:study].nil? && m[:reference]}
+	end
+
 	private
 
 	def compare_denotations(study_denotations, reference_denotations, text)
@@ -61,18 +80,18 @@ class PubannotationEvaluator
 		study_denotations = study_denotations.sort_by{|d| [d[:span][:begin], -d[:span][:end]]}
 		reference_denotations = reference_denotations.sort_by{|d| [d[:span][:begin], -d[:span][:end]]}
 
-		matches = []
+		mmatches = []
 		study_denotations.each do |s|
 			r_begin = reference_denotations.bsearch_index{|r| r[:span][:end] > s[:span][:begin]}
 			r_end = reference_denotations.bsearch_index{|r| r[:span][:begin] > s[:span][:end]}
 			r_end = r_end.nil? ? -1 : r_end - 1
 			reference_denotations[r_begin .. r_end].each do |r|
 				relatedness = get_relatedness_of_denotations(s, r, text)
-				matches << {study:s, reference:r, weight:relatedness} if relatedness > 0
+				mmatches << {study:s, reference:r, weight:relatedness} if relatedness > 0
 			end
 		end
 
-		matches
+		mmatches
 	end
 
 	# To determine how much the two annotations match to each other based on the denotation match criteria
@@ -81,7 +100,7 @@ class PubannotationEvaluator
 		return 0 if s[:span][:end] <= r[:span][:begin] || s[:span][:begin] >= r[:span][:end]
 
 		# character-level tolerance
-		return 0 if (s[:span][:begin] - r[:span][:begin]).abs > @boundary_softness_character || (s[:span][:end] - r[:span][:end]).abs > @boundary_softness_character
+		return 0 if (s[:span][:begin] - r[:span][:begin]).abs > @soft_match_chatacters || (s[:span][:end] - r[:span][:end]).abs > @soft_match_chatacters
 
 		# word-level tolerance
 		front_mismatch = if s[:span][:begin] < r[:span][:begin]
@@ -89,19 +108,19 @@ class PubannotationEvaluator
 		else
 			text[r[:span][:begin] ... s[:span][:begin]]
 		end
-		return 0 if front_mismatch.count(' ') > @boundary_softness_word
+		return 0 if front_mismatch.count(' ') > @soft_match_words
 
 		rear_mismatch = if s[:span][:end] < r[:span][:end]
 			text[s[:span][:end] ... r[:span][:end]]
 		else
 			text[r[:span][:end] ... s[:span][:end]]
 		end
-		return 0 if rear_mismatch.count(' ') > @boundary_softness_word
+		return 0 if rear_mismatch.count(' ') > @soft_match_words
 
-		return s[:obj] == r[:obj] ? 1 : 0.5
+		return @denotation_type_match.call(s[:obj], r[:obj])
 	end
 
-	def find_denotation_matches(matches)
+	def find_denotation_matches(mmatches)
 		comp = Proc.new do |a, b|
 			c = a[:weight] <=> b[:weight]
 			if c.zero?
@@ -115,7 +134,7 @@ class PubannotationEvaluator
 				c
 			end
 		end
-		find_exclusive_matches(matches, comp)
+		find_exclusive_matches(mmatches, comp)
 	end
 
 	def compare_relations(study_relations, reference_relations, mmatch_denotations)
@@ -137,7 +156,7 @@ class PubannotationEvaluator
 	end
 
 	def get_relatedness_of_relations(s, r, mmatch_denotations)
-		# at least, the subject and object of the two relateions should match to each other.
+		# at least, the subject and object of the two relations should match to each other.
 		match_subj = mmatch_denotations.find{|m| m[:study] && m[:reference] && m[:study][:id] == s[:subj] && m[:reference][:id] == r[:subj]}
 		return 0 if match_subj.nil?
 
@@ -145,7 +164,7 @@ class PubannotationEvaluator
 		return 0 if match_obj.nil?
 
 		# predicate match
-		match_pred_weight = s[:pred] == r[:pred] ? 1 : 0
+		match_pred_weight = @relation_type_match.call(s[:pred], r[:pred])
 
 		return (match_subj[:weight] + match_obj[:weight] + match_pred_weight).to_f / 3
 	end
@@ -158,7 +177,7 @@ class PubannotationEvaluator
 		find_exclusive_matches(matches, comp)
 	end
 
-
+	# TODO: to implement it
 	def compare_modifications(study_modifications, reference_modifications, comparison_relations, compare_relations)
 		[]
 	end
@@ -200,31 +219,31 @@ class PubannotationEvaluator
 	def count(comparison)
 		# counts of denotations
 		count_study_denotations = begin
-			count = Hash.new(0)
+			count = {}
 			study_denotations = comparison.select{|m| m[:study] && m[:type]==:denotation}
 			study_denotations.group_by{|m| m[:study][:obj]}.each{|k, m| count[k] = m.count}
 			count.update('All' => study_denotations.count)
 		end
 
 		count_reference_denotations = begin
-			count = Hash.new(0)
+			count = {}
 			reference_denotations = comparison.select{|m| m[:reference] && m[:type]==:denotation}
 			reference_denotations.group_by{|m| m[:reference][:obj]}.each{|k, m| count[k] = m.count}
 			count.update('All' => reference_denotations.count)
 		end
 
 		count_study_match_denotations = begin
-			count = Hash.new(0)
+			count = count_study_denotations.transform_values{|v| 0}
 			study_match_denotations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:denotation}
-			study_match_denotations.group_by{|m| m[:study][:obj]}.each{|k, m| count[k] = m.count}
-			count.update('All' => study_match_denotations.count)
+			study_match_denotations.group_by{|m| m[:study][:obj]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
+			count.update('All' => study_match_denotations.inject(0){|s, c| s+=c[:weight]})
 		end
 
 		count_reference_match_denotations = begin
-			count = Hash.new(0)
+			count = count_reference_denotations.transform_values{|v| 0}
 			reference_match_denotations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:denotation}
-			reference_match_denotations.group_by{|m| m[:reference][:obj]}.each{|k, m| count[k] = m.count}
-			count.update('All' => reference_match_denotations.count)
+			reference_match_denotations.group_by{|m| m[:reference][:obj]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
+			count.update('All' => reference_match_denotations.inject(0){|s, c| s+=c[:weight]})
 		end
 
 		counts = {
@@ -240,30 +259,30 @@ class PubannotationEvaluator
 
 		# counts of relations
 		count_study_relations = begin
-			count = Hash.new(0)
+			count = {}
 			study_relations = comparison.select{|m| m[:study] && m[:type]==:relation}
 			study_relations.group_by{|m| m[:study][:pred]}.each{|k, m| count[k] = m.count}
 			count.update('All' => study_relations.count)
 		end
 
 		count_reference_relations = begin
-			count = Hash.new(0)
+			count = {}
 			reference_relations = comparison.select{|m| m[:reference] && m[:type]==:relation}
 			reference_relations.group_by{|m| m[:reference][:pred]}.each{|k, m| count[k] = m.count}
 			count.update('All' => reference_relations.count)
 		end
 
 		count_study_match_relations = begin
-			count = Hash.new(0)
+			count = count_study_relations.transform_values{|v| 0}
 			study_match_relations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:relation}
-			study_match_relations.group_by{|m| m[:study][:pred]}.each{|k, m| count[k] = m.count}
+			study_match_relations.group_by{|m| m[:study][:pred]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
 			count.update('All' => study_match_relations.count)
 		end
 
 		count_reference_match_relations = begin
-			count = Hash.new(0)
+			count = count_reference_relations.transform_values{|v| 0}
 			reference_match_relations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:relation}
-			reference_match_relations.group_by{|m| m[:reference][:pred]}.each{|k, m| count[k] = m.count}
+			reference_match_relations.group_by{|m| m[:reference][:pred]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
 			count.update('All' => reference_match_relations.count)
 		end
 
@@ -285,10 +304,21 @@ class PubannotationEvaluator
 	end
 
 	def get_prf(counts)
+		precision = counts[:study].keys.inject({}){|m, k| m.merge(k => counts[:matched_study][k].to_f / counts[:study][k]) if counts[:study][k] > 0}
+		recall = counts[:reference].keys.inject({}){|m, k| m.merge(k => counts[:matched_reference][k].to_f / counts[:reference][k]) if counts[:reference][k] > 0}
+
 		keys = (counts[:study].keys + counts[:reference].keys).uniq
-		precision = keys.inject(Hash.new(0)){|m, k| m[k] = counts[:study][k] > 0 ? counts[:matched_study][k].to_f / counts[:study][k] : 0; m}
-		recall = keys.inject(Hash.new(0)){|m, k| m[k] = counts[:reference][k] > 0 ? counts[:matched_reference][k].to_f / counts[:reference][k] : 0; m}
-		fscore = keys.inject(Hash.new(0)){|m, k| p = precision[k]; r = recall[k]; m[k] = (p * r) > 0 ? 2.to_f * p * r / (p + r) : 0; m}
+		fscore = keys.inject({}) do |m, k|
+			_p = precision[k]
+			_r = recall[k]
+			_f = if _p && _r
+				(_p + _r) > 0 ? 2.to_f * _p * _r / (_p + _r) : 0
+			else 
+				_p ? _p : _r
+			end
+			m.merge(k => _f)
+		end
+
 		{
 			precision: precision,
 			recall: recall,

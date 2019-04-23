@@ -77,6 +77,10 @@
     
     <li ><a href="#method-i-evaluate">#evaluate</a>
     
+    <li ><a href="#method-i-get_false_negatives">#get_false_negatives</a>
+    
+    <li ><a href="#method-i-get_false_positives">#get_false_positives</a>
+    
   </ul>
 </div>
 
@@ -105,12 +109,17 @@
       </header>
       <dl>
       
-        <dt id="BOUNDARY_SOFTNESS_CHARACTER">BOUNDARY_SOFTNESS_CHARACTER
+        <dt id="EXACT_TYPE_MATCH">EXACT_TYPE_MATCH
         
         <dd>
         
       
-        <dt id="BOUNDARY_SOFTNESS_WORD">BOUNDARY_SOFTNESS_WORD
+        <dt id="SOFT_MATCH_CHARACTERS">SOFT_MATCH_CHARACTERS
+        
+        <dd>
+        
+      
+        <dt id="SOFT_MATCH_WORDS">SOFT_MATCH_WORDS
         
         <dd>
         
@@ -132,7 +141,7 @@
         
         <div class="method-heading">
           <span class="method-name">new</span><span
-            class="method-args">(boundary_softness_character = BOUNDARY_SOFTNESS_CHARACTER, boundary_softness_word = BOUNDARY_SOFTNESS_WORD)</span>
+            class="method-args">(soft_match_chatacters = SOFT_MATCH_CHARACTERS, soft_match_words = SOFT_MATCH_WORDS, denotation_type_match = EXACT_TYPE_MATCH, relation_type_match = EXACT_TYPE_MATCH)</span>
           
           <span class="method-click-advice">click to toggle source</span>
           
@@ -147,11 +156,21 @@
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 5</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">initialize</span>(<span class="ruby-identifier">boundary_softness_character</span> = <span class="ruby-constant">BOUNDARY_SOFTNESS_CHARACTER</span>, <span class="ruby-identifier">boundary_softness_word</span> = <span class="ruby-constant">BOUNDARY_SOFTNESS_WORD</span>)
-        <span class="ruby-ivar">@boundary_softness_character</span> = <span class="ruby-identifier">boundary_softness_character</span>
-        <span class="ruby-ivar">@boundary_softness_word</span> = <span class="ruby-identifier">boundary_softness_word</span>
-<span class="ruby-keyword">end</span></pre>
+            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 6</span>
+        <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">initialize</span>(<span class="ruby-identifier">soft_match_chatacters</span> = <span class="ruby-constant">SOFT_MATCH_CHARACTERS</span>, <span class="ruby-identifier">soft_match_words</span> = <span class="ruby-constant">SOFT_MATCH_WORDS</span>, <span class="ruby-identifier">denotation_type_match</span> = <span class="ruby-constant">EXACT_TYPE_MATCH</span>, <span class="ruby-identifier">relation_type_match</span> = <span class="ruby-constant">EXACT_TYPE_MATCH</span>)
+                <span class="ruby-ivar">@soft_match_chatacters</span> = <span class="ruby-identifier">soft_match_chatacters</span>
+                <span class="ruby-ivar">@soft_match_words</span> = <span class="ruby-identifier">soft_match_words</span>
+                <span class="ruby-ivar">@denotation_type_match</span> = <span class="ruby-identifier">eval</span> <span class="ruby-identifier">&lt;&lt;-HEREDOC</span>
+<span class="ruby-value">                        Proc.new do |study_type, reference_type|
+                                #{denotation_type_match}
+                        end
+</span><span class="ruby-identifier">                HEREDOC</span>
+                <span class="ruby-ivar">@relation_type_match</span> = <span class="ruby-identifier">eval</span> <span class="ruby-identifier">&lt;&lt;-HEREDOC</span>
+<span class="ruby-value">                        Proc.new do |study_type, reference_type|
+                                #{relation_type_match}
+                        end
+</span><span class="ruby-identifier">                HEREDOC</span>
+        <span class="ruby-keyword">end</span></pre>
           </div>
           
         </div>
@@ -196,7 +215,7 @@
 
           
           <div class="method-source-code" id="compare-source">
-            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 16</span>
+            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 27</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">compare</span>(<span class="ruby-identifier">study_annotations</span>, <span class="ruby-identifier">reference_annotations</span>)
         <span class="ruby-identifier">study_annotations</span>[<span class="ruby-value">:denotations</span>] <span class="ruby-operator">||=</span> []
         <span class="ruby-identifier">study_annotations</span>[<span class="ruby-value">:relations</span>] <span class="ruby-operator">||=</span> []
@@ -252,11 +271,77 @@ annotations</p>
 
           
           <div class="method-source-code" id="evaluate-source">
-            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 42</span>
+            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 53</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">evaluate</span>(<span class="ruby-identifier">comparison</span>)
         <span class="ruby-identifier">counts</span> = <span class="ruby-identifier">count</span>(<span class="ruby-identifier">comparison</span>)
         <span class="ruby-identifier">measures</span> = <span class="ruby-identifier">measure</span>(<span class="ruby-identifier">counts</span>)
         {<span class="ruby-value">counts:</span><span class="ruby-identifier">counts</span>, <span class="ruby-value">measures:</span><span class="ruby-identifier">measures</span>}
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-get_false_negatives" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">get_false_negatives</span><span
+            class="method-args">(comparison, project_name)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="get_false_negatives-source">
+            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 63</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">get_false_negatives</span>(<span class="ruby-identifier">comparison</span>, <span class="ruby-identifier">project_name</span>)
+        <span class="ruby-identifier">comparison</span>.<span class="ruby-identifier">select</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span> <span class="ruby-identifier">m</span>[<span class="ruby-value">:study</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">m</span>[<span class="ruby-value">:reference</span>]}
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-get_false_positives" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">get_false_positives</span><span
+            class="method-args">(comparison, project_name)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          
+          
+          
+
+          
+          <div class="method-source-code" id="get_false_positives-source">
+            <pre><span class="ruby-comment"># File lib/pubannotation_evaluator/pubannotation_evaluator.rb, line 59</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">get_false_positives</span>(<span class="ruby-identifier">comparison</span>, <span class="ruby-identifier">project_name</span>)
+        <span class="ruby-identifier">comparison</span>.<span class="ruby-identifier">select</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span> <span class="ruby-identifier">m</span>[<span class="ruby-value">:study</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">m</span>[<span class="ruby-value">:reference</span>].<span class="ruby-identifier">nil?</span>}
 <span class="ruby-keyword">end</span></pre>
           </div>
           

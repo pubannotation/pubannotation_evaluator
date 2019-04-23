@@ -3,15 +3,40 @@ require 'pubannotation_evaluator'
 require 'json'
 
 rdir = nil
+verbose = false
+
+soft_match_characters = PubannotationEvaluator::SOFT_MATCH_CHARACTERS
+soft_match_words = PubannotationEvaluator::SOFT_MATCH_WORDS
+denotation_type_match = PubannotationEvaluator::EXACT_TYPE_MATCH
+relation_type_match = PubannotationEvaluator::EXACT_TYPE_MATCH
 
 ## command line option processing
 require 'optparse'
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: pubannotation-eval.rb [options] annotation_file(s)"
 
-  opts.on('-r', '--rdir=directory', 'specifies the path to the directory of reference annotation_file(s).') do |dir|
+  opts.on('-r', '--rdir=DIR', 'specifies the path to the directory of reference annotation_file(s).') do |dir|
     rdir = dir
+  end
 
+  opts.on('-c', '--soft-match-characters=INT', "specifies the number of characters to allow for boundary mismatch (default=#{PubannotationEvaluator::SOFT_MATCH_CHARACTERS}).") do |i|
+    soft_match_characters = i.to_i
+  end
+
+  opts.on('-w', '--soft-match-words=INT', "specifies the number of words to allow for boundary mismatch (default=#{PubannotationEvaluator::SOFT_MATCH_WORDS}).") do |i|
+    soft_match_words = i.to_i
+  end
+
+  opts.on('-D', '--denotation-type-match=TEXT', "specifies a ruby block to determine type match of two denotations (defalut='#{PubannotationEvaluator::EXACT_TYPE_MATCH}').") do |b|
+    denotation_type_match = b
+  end
+
+  opts.on('-R', '--relation-type-match=TEXT', "specifies a ruby block to determine type match of two denotations (defalut='#{PubannotationEvaluator::EXACT_TYPE_MATCH}').") do |b|
+    relation_type_match = b
+  end
+
+  opts.on('-v', '--verbose', "tells it to report false positives and false negatives.") do
+    verbose = true
   end
 
   opts.on('-h', '--help', 'displays this screen.') do
@@ -27,7 +52,7 @@ if ARGV.length == 0 || rdir.nil?
 	exit
 end
 
-evaluator = PubannotationEvaluator.new
+evaluator = PubannotationEvaluator.new(soft_match_characters, soft_match_words, denotation_type_match, relation_type_match)
 
 comparison = ARGV.inject([]) do |col, filepath|
 	if File.extname(filepath) == '.json'
@@ -53,6 +78,12 @@ end
 
 evaluation = evaluator.evaluate(comparison)
 
-false_positives = comparison.select{|m| m[:study] && m[:reference].nil?}
-false_negatives = comparison.select{|m| m[:study].nil? && m[:reference]}
-puts JSON.generate(evaluation.merge(false_positives:false_positives, false_negatives:false_negatives))
+if verbose
+	false_positives = comparison.select{|m| m[:study] && m[:reference].nil?}
+	evaluation[:false_positives] = false_positives unless false_positives.empty?
+
+	false_negatives = comparison.select{|m| m[:study].nil? && m[:reference]}
+	evaluation[:false_negatives] = false_negatives unless false_negatives.empty?
+end
+
+puts JSON.generate(evaluation)

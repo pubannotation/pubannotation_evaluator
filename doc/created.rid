@@ -1,7 +1,9 @@
-Sat, 30 Mar 2019 23:20:52 +0900
-./pubannotation_evaluator.gemspec	Sat, 30 Mar 2019 23:19:54 +0900
+Tue, 23 Apr 2019 21:23:55 +0900
+./pubannotation_evaluator.gemspec	Sat, 30 Mar 2019 23:39:34 +0900
 ./lib/pubannotation_evaluator.rb	Sat, 30 Mar 2019 15:34:47 +0900
-./lib/pubannotation_evaluator/pubannotation_evaluator.rb	Sat, 30 Mar 2019 22:24:22 +0900
+./lib/pubannotation_evaluator/pubannotation_evaluator.rb	Tue, 23 Apr 2019 20:56:07 +0900
+./pubannotation_evaluator-0.1.0.gem	Sat, 30 Mar 2019 23:53:19 +0900
 ./Gemfile	Sat, 30 Mar 2019 23:20:37 +0900
-./bin/pubannotation-eval.rb	Sat, 30 Mar 2019 22:51:28 +0900
-./README.md	Sat, 30 Mar 2019 22:55:24 +0900
+./bin/pubannotation-eval	Tue, 23 Apr 2019 17:21:33 +0900
+./README.md	Sat, 30 Mar 2019 23:51:53 +0900
+./Gemfile.lock	Sun, 31 Mar 2019 00:09:51 +0900
