@@ -233,14 +233,18 @@ class PubannotationEvaluator
 		end
 
 		count_study_match_denotations = begin
-			count = count_study_denotations.transform_values{|v| 0}
+			# count = count_study_denotations.transform_values{|v| 0}
+			count = {}
+			count_study_denotations.each_key{|k| count[k] = 0}
 			study_match_denotations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:denotation}
 			study_match_denotations.group_by{|m| m[:study][:obj]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
 			count.update('All' => study_match_denotations.inject(0){|s, c| s+=c[:weight]})
 		end
 
 		count_reference_match_denotations = begin
-			count = count_reference_denotations.transform_values{|v| 0}
+			# count = count_reference_denotations.transform_values{|v| 0}
+			count = {}
+			count_reference_denotations.each_key{|k| count[k] = 0}
 			reference_match_denotations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:denotation}
 			reference_match_denotations.group_by{|m| m[:reference][:obj]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
 			count.update('All' => reference_match_denotations.inject(0){|s, c| s+=c[:weight]})
@@ -273,14 +277,18 @@ class PubannotationEvaluator
 		end
 
 		count_study_match_relations = begin
-			count = count_study_relations.transform_values{|v| 0}
+			# count = count_study_relations.transform_values{|v| 0}
+			count = {}
+			count_study_relations.each_key{|k| count[k] = 0}
 			study_match_relations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:relation}
 			study_match_relations.group_by{|m| m[:study][:pred]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
 			count.update('All' => study_match_relations.count)
 		end
 
 		count_reference_match_relations = begin
-			count = count_reference_relations.transform_values{|v| 0}
+			# count = count_reference_relations.transform_values{|v| 0}
+			count = {}
+			count_reference_relations.each_key{|k| count[k] = 0}
 			reference_match_relations = comparison.select{|m| m[:study] && m[:reference] && m[:type]==:relation}
 			reference_match_relations.group_by{|m| m[:reference][:pred]}.each{|k, m| count[k] = m.inject(0){|s, c| s+=c[:weight]}}
 			count.update('All' => reference_match_relations.count)
