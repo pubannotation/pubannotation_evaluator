@@ -195,11 +195,11 @@ class PubannotationEvaluator
 		r_matched = []
 		matches_group_by_s = matches.group_by{|m| m[:study]}
 		matches_group_by_s.each_value do |m|
+			m.delete_if{|i| r_matched.include?(i[:reference])}
 			if m.length == 1
 				s_matched << m[0][:study]
 				r_matched << m[0][:reference]
-			else
-				m.delete_if{|i| r_matched.include?(i[:reference])}
+			elsif m.length > 1
 				m_sel = m.max{|a, b| comp.call(a, b)}
 				m.replace([m_sel])
 				s_matched << m_sel[:study]
