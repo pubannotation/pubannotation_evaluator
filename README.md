@@ -1,15 +1,18 @@
 # PubAnnotation Evaluator
-It is an evaluation tool for annotations in PubAnnotation JSON format. It compares a set of annotations under evaluation (which we call _study annotations_) against another set of annotations which we assume trustible (_reference annotations_), and and reports the difference in precision, recall, and f-score.
+It is an evaluation tool for annotations in PubAnnotation JSON format.
+It compares a set of annotations under evaluation (we call it _study annotations_) against another set of annotations which we assume trustible (_reference annotations_), and reports the difference in precision, recall, and f-score.
+It also shows false positives and false negatives.
 
 # Requirement
 Please use it with ruby version 2.3 or above.
+If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
 
 # Install
-It is released in a gemfile, which is a standard package distribution system of the ruby programming language. If your system already has an installation of ruby, you can simply install it by the command
+It is released as a gemfile, which is a standard package distribution system of the ruby programming language.
+Please use the following ruby command to install it:
 ```console
 > gem install pubannotation_evaluator
 ```
-If your system does not have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
 
 # Execuete
 This package includes an excutable command, _pubannotation-eval_. Executing it without any argument will show you how to use it.
