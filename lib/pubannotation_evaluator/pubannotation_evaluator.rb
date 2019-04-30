@@ -168,8 +168,7 @@ class PubannotationEvaluator
 
 		# predicate match
 		match_pred_weight = @relation_type_match.call(s[:pred], r[:pred])
-
-		return (match_subj[:weight] + match_obj[:weight] + match_pred_weight).to_f / 3
+		# return (match_subj[:weight] + match_obj[:weight] + match_pred_weight).to_f / 3
 	end
 
 	def find_relation_matches(matches)
