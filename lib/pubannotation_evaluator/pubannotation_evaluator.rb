@@ -315,6 +315,9 @@ class PubannotationEvaluator
 		precision = counts[:study].keys.inject({}){|m, k| m.merge(k => counts[:matched_study][k].to_f / counts[:study][k]) if counts[:study][k] > 0}
 		recall = counts[:reference].keys.inject({}){|m, k| m.merge(k => counts[:matched_reference][k].to_f / counts[:reference][k]) if counts[:reference][k] > 0}
 
+		precision ||= {}
+		recall ||= {}
+
 		keys = (counts[:study].keys + counts[:reference].keys).uniq
 		fscore = keys.inject({}) do |m, k|
 			_p = precision[k]
@@ -324,7 +327,7 @@ class PubannotationEvaluator
 			else 
 				_p ? _p : _r
 			end
-			m.merge(k => _f)
+			_f.nil? ? m : m.merge(k => _f)
 		end
 
 		{
