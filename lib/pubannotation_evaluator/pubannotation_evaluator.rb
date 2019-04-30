@@ -83,8 +83,11 @@ class PubannotationEvaluator
 		mmatches = []
 		study_denotations.each do |s|
 			r_begin = reference_denotations.bsearch_index{|r| r[:span][:end] > s[:span][:begin]}
+			break if r_begin.nil?
+
 			r_end = reference_denotations.bsearch_index{|r| r[:span][:begin] > s[:span][:end]}
 			r_end = r_end.nil? ? -1 : r_end - 1
+
 			reference_denotations[r_begin .. r_end].each do |r|
 				relatedness = get_relatedness_of_denotations(s, r, text)
 				mmatches << {study:s, reference:r, weight:relatedness} if relatedness > 0

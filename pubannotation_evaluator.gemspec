@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'pubannotation_evaluator'
-  s.version     = '1.0.2'
+  s.version     = '1.0.3'
   s.summary     = 'It compares a set of annotations (study annotations) against another set of annotations (reference annotations), and evaluates the accuracy of the study annotations.'
   s.date        = Time.now.utc.strftime("%Y-%m-%d")
   s.description = 'A tool to evaluate the accuracy of a set of annotations.'
