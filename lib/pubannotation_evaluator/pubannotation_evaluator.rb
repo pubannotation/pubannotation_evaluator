@@ -3,17 +3,17 @@ class PubannotationEvaluator
 	SOFT_MATCH_WORDS = 2
 	EXACT_TYPE_MATCH = 'study_type == reference_type ? 1 : 0'
 
-	def initialize(soft_match_chatacters = SOFT_MATCH_CHARACTERS, soft_match_words = SOFT_MATCH_WORDS, denotation_type_match = EXACT_TYPE_MATCH, relation_type_match = EXACT_TYPE_MATCH)
-		@soft_match_chatacters = soft_match_chatacters
-		@soft_match_words = soft_match_words
+	def initialize(soft_match_chatacters, soft_match_words, denotation_type_match, relation_type_match)
+		@soft_match_chatacters = soft_match_chatacters || SOFT_MATCH_CHARACTERS
+		@soft_match_words = soft_match_words || SOFT_MATCH_WORDS
 		@denotation_type_match = eval <<-HEREDOC
 			Proc.new do |study_type, reference_type|
-				#{denotation_type_match}
+				#{denotation_type_match || EXACT_TYPE_MATCH}
 			end
 		HEREDOC
 		@relation_type_match = eval <<-HEREDOC
 			Proc.new do |study_type, reference_type|
-				#{relation_type_match}
+				#{relation_type_match || EXACT_TYPE_MATCH}
 			end
 		HEREDOC
 	end
@@ -41,7 +41,6 @@ class PubannotationEvaluator
 								 comparison_modifications.collect{|a| a.merge(type: :modification)}
 
 		docspec = {sourcedb:study_annotations[:sourcedb], sourceid:study_annotations[:sourceid]}
-		docspec[:divid] = study_annotations[:divid] if study_annotations.has_key?(:divid)
 		comparison.collect{|d| d.merge(docspec)}
 	end
 
@@ -71,6 +70,8 @@ class PubannotationEvaluator
 		matches  = find_denotation_matches(mmatches)
 		false_positives = study_denotations - matches.collect{|r| r[:study]}
 		false_negatives = reference_denotations - matches.collect{|r| r[:reference]}
+		false_positives.each{|r| r.merge!(text:text[r[:span][:begin]...r[:span][:end]])}
+		false_negatives.each{|r| r.merge!(text:text[r[:span][:begin]...r[:span][:end]])}
 		comparison = matches + false_positives.collect{|s| {study:s}} + false_negatives.collect{|r| {reference:r}}
 		[comparison, mmatches]
 	end
