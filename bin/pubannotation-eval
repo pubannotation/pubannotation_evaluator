@@ -84,6 +84,9 @@ if verbose
 
 	false_negatives = comparison.select{|m| m[:study].nil? && m[:reference]}
 	evaluation[:false_negatives] = false_negatives unless false_negatives.empty?
+
+	true_positives = comparison.select{|m| m[:study] && m[:reference]}
+	evaluation[:true_positives] = true_positives unless true_positives.empty?
 end
 
 puts JSON.generate(evaluation)

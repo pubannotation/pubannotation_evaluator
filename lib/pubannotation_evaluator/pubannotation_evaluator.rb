@@ -70,8 +70,8 @@ class PubannotationEvaluator
 		matches  = find_denotation_matches(mmatches)
 		false_positives = study_denotations - matches.collect{|r| r[:study]}
 		false_negatives = reference_denotations - matches.collect{|r| r[:reference]}
-		false_positives.each{|r| r.merge!(text:text[r[:span][:begin]...r[:span][:end]])}
-		false_negatives.each{|r| r.merge!(text:text[r[:span][:begin]...r[:span][:end]])}
+		study_denotations.each{|r| r.merge!(text:text[r[:span][:begin]...r[:span][:end]])}
+		reference_denotations.each{|r| r.merge!(text:text[r[:span][:begin]...r[:span][:end]])}
 		comparison = matches + false_positives.collect{|s| {study:s}} + false_negatives.collect{|r| {reference:r}}
 		[comparison, mmatches]
 	end
