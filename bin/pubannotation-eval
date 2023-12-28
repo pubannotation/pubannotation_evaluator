@@ -10,7 +10,6 @@ soft_match_words = PubannotationEvaluator::SOFT_MATCH_WORDS
 denotation_type_match = PubannotationEvaluator::EXACT_TYPE_MATCH
 relation_type_match = PubannotationEvaluator::EXACT_TYPE_MATCH
 
-## command line option processing
 require 'optparse'
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: pubannotation-eval.rb [options] annotation_file(s)"
