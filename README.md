@@ -4,7 +4,7 @@ It compares a set of annotations under evaluation (we call it _study annotations
 It also shows false positives and false negatives.
 
 # Requirement
-Please use it with ruby version 2.3 or above.
+Please use it with ruby version 3.2 or above.
 If your system does not already have an installation of ruby, you need to install it. Using [rvm](https://rvm.io/) is generally a recommended way to install ruby in your system.
 
 # Install
