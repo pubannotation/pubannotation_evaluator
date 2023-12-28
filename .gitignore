@@ -1,1 +1,2 @@
-pubannotation_evaluator-0.1.0.gem
+pubannotation_evaluator-*.gem
+pubannotation_evaluator.gemspec

@@ -4,11 +4,12 @@ GEM
 
 PLATFORMS
   ruby
+  x86_64-linux
 
 DEPENDENCIES
 
 RUBY VERSION
-   ruby 2.5.8p224
+   ruby 3.2.2p53
 
 BUNDLED WITH
-   1.17.3
+   2.5.1
